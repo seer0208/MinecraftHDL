@@ -53,5 +53,5 @@ mhdlc graph tests/fixtures/yosys/and_gate.json --out build/and_gate.dot
 
 - widen cell support
 - capture assigns and net aliases more completely
-- define the redstone cell library
+- build the redstone cell library and tech mapper
 - add placement/routing passes

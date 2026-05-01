@@ -1,0 +1,22 @@
+name: missing_cell
+version: "0.1"
+cells:
+  - name: rs_and2_v1
+    kind: AND
+    size: [3, 2, 4]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: west
+      - name: B
+        direction: input
+        anchor: [2, 0, 0]
+        side: east
+      - name: Y
+        direction: output
+        anchor: [1, 0, 3]
+        side: south
+    orientations: [north]
+    delay_ticks: 2
+    max_wire_without_repeater: 15

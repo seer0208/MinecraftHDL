@@ -1,0 +1,153 @@
+name: redstone_v1
+version: "0.1"
+cells:
+  - name: rs_and2_v1
+    kind: AND
+    size: [3, 2, 4]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: west
+      - name: B
+        direction: input
+        anchor: [2, 0, 0]
+        side: east
+      - name: Y
+        direction: output
+        anchor: [1, 0, 3]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 2
+    max_wire_without_repeater: 15
+    tags: [logic, combinational]
+  - name: rs_or2_v1
+    kind: OR
+    size: [3, 1, 4]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: west
+      - name: B
+        direction: input
+        anchor: [2, 0, 0]
+        side: east
+      - name: Y
+        direction: output
+        anchor: [1, 0, 3]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 1
+    max_wire_without_repeater: 15
+    tags: [logic, combinational]
+  - name: rs_xor2_v1
+    kind: XOR
+    size: [3, 2, 5]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: west
+      - name: B
+        direction: input
+        anchor: [2, 0, 0]
+        side: east
+      - name: Y
+        direction: output
+        anchor: [1, 0, 4]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 3
+    max_wire_without_repeater: 15
+    tags: [logic, combinational]
+  - name: rs_inv_v1
+    kind: INV
+    size: [1, 1, 3]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: north
+      - name: Y
+        direction: output
+        anchor: [0, 0, 2]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 1
+    max_wire_without_repeater: 15
+    tags: [logic, combinational]
+  - name: rs_mux2_v1
+    kind: MUX
+    size: [5, 2, 6]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: west
+      - name: B
+        direction: input
+        anchor: [4, 0, 0]
+        side: east
+      - name: S
+        direction: input
+        anchor: [2, 0, 0]
+        side: north
+      - name: Y
+        direction: output
+        anchor: [2, 0, 5]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 2
+    max_wire_without_repeater: 15
+    tags: [logic, combinational]
+  - name: rs_input_v1
+    kind: INPUT
+    size: [1, 2, 1]
+    pins:
+      - name: OUT
+        direction: output
+        anchor: [0, 0, 0]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 0
+    max_wire_without_repeater: 15
+    notes: Abstract input marker cell for mapped redstone netlists.
+    tags: [io]
+  - name: rs_output_v1
+    kind: OUTPUT
+    size: [1, 2, 1]
+    pins:
+      - name: IN
+        direction: input
+        anchor: [0, 0, 0]
+        side: north
+    orientations: [north, south, east, west]
+    delay_ticks: 0
+    max_wire_without_repeater: 15
+    notes: Abstract output marker cell for mapped redstone netlists.
+    tags: [io]
+  - name: rs_const0_v1
+    kind: CONST0
+    size: [1, 1, 1]
+    pins:
+      - name: OUT
+        direction: output
+        anchor: [0, 0, 0]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 0
+    max_wire_without_repeater: 15
+    tags: [constant]
+  - name: rs_const1_v1
+    kind: CONST1
+    size: [1, 1, 1]
+    pins:
+      - name: OUT
+        direction: output
+        anchor: [0, 0, 0]
+        side: south
+    orientations: [north, south, east, west]
+    delay_ticks: 0
+    max_wire_without_repeater: 15
+    tags: [constant]

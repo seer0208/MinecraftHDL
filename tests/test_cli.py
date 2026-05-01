@@ -2,7 +2,7 @@ import json
 
 from mhdlc.cli import main
 
-from tests.conftest import FIXTURES
+from tests.conftest import FIXTURES, TECHLIB_PATH
 
 
 def test_import_command_writes_normalized_json(tmp_path):
@@ -69,3 +69,62 @@ def test_import_all_modules_writes_design_json(tmp_path):
     payload = json.loads(out_path.read_text(encoding="utf-8"))
     assert payload["format"] == "mhdlc.design.v1"
     assert set(payload["design"]["modules"]) == {"AND", "counter"}
+
+
+def test_techlib_check_command(capsys):
+    rc = main(["techlib", "check", str(TECHLIB_PATH)])
+
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert "Library: redstone_v1" in captured.out
+
+
+def test_techlib_check_command_fails_for_invalid_library(capsys):
+    rc = main(["techlib", "check", str(FIXTURES / "techlib" / "invalid_orientation.yaml")])
+
+    assert rc == 1
+    captured = capsys.readouterr()
+    assert "Technology library error:" in captured.out
+
+
+def test_map_command_writes_redstone_netlist(tmp_path):
+    out_path = tmp_path / "and_gate.redstone.json"
+
+    rc = main(
+        [
+            "map",
+            str(FIXTURES / "yosys" / "and_gate.json"),
+            "--lib",
+            str(TECHLIB_PATH),
+            "--out",
+            str(out_path),
+        ]
+    )
+
+    assert rc == 0
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
+    assert payload["format"] == "mhdlc.redstone.v1"
+    assert payload["module"]["name"] == "AND"
+    assert any(instance["kind"] == "AND" for instance in payload["module"]["instances"])
+
+
+def test_map_command_fails_for_sequential_fixture(capsys, tmp_path):
+    out_path = tmp_path / "counter.redstone.json"
+
+    rc = main(
+        [
+            "map",
+            str(FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "counter.json"),
+            "--module",
+            "counter",
+            "--lib",
+            str(TECHLIB_PATH),
+            "--out",
+            str(out_path),
+        ]
+    )
+
+    assert rc == 1
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["errors"]

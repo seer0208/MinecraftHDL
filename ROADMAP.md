@@ -142,10 +142,11 @@ Outputs:
 After phase 1 is stable:
 
 1. Introduce a data-driven redstone cell library.
-2. Characterize cells with footprint, pins, orientation, and delay ticks.
-3. Build placement and routing outside Minecraft.
-4. Add DRC and tick-based timing reports.
-5. Export schematics before returning to a modern Minecraft integration.
+2. Characterize cells with footprint, pins, orientation, delay ticks, and wire/repeater constraints.
+3. Add a first technology-mapping pass from logical cells to redstone cells.
+4. Build placement and routing outside Minecraft.
+5. Add DRC and tick-based timing reports.
+6. Export schematics before returning to a modern Minecraft integration.
 
 ## Suggested Near-Term Backlog
 

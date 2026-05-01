@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "minecrafthdl-next"
 version = "0.1.0"
-description = "Standalone phase-1 compiler scaffold for MinecraftHDL."
+description = "Standalone compiler pipeline for MinecraftHDL."
 readme = "ROADMAP.md"
 requires-python = ">=3.11"
 authors = [
   { name = "MinecraftHDL contributors" }
 ]
-dependencies = []
+dependencies = ["PyYAML>=6,<7"]
 
 [project.scripts]
 mhdlc = "mhdlc.cli:main"

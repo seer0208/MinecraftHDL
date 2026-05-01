@@ -1,0 +1,22 @@
+name: invalid_missing_pin
+version: "0.1"
+cells:
+  - name: bad_mux
+    kind: MUX
+    size: [3, 1, 3]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: west
+      - name: B
+        direction: input
+        anchor: [2, 0, 0]
+        side: east
+      - name: Y
+        direction: output
+        anchor: [1, 0, 2]
+        side: south
+    orientations: [north]
+    delay_ticks: 1
+    max_wire_without_repeater: 15

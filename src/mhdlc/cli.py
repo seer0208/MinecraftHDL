@@ -7,15 +7,31 @@ from pathlib import Path
 from mhdlc.checks.validation import validate_design, validate_module
 from mhdlc.export.dot import module_to_dot
 from mhdlc.frontends.yosys_json import list_yosys_modules, load_yosys_design, load_yosys_module
-from mhdlc.io.json_io import design_to_dict, module_to_dict
+from mhdlc.io.json_io import (
+    design_to_dict,
+    module_to_dict,
+    redstone_design_to_dict,
+    redstone_module_to_dict,
+)
+from mhdlc.mapping import MappingError, map_design, map_module
+from mhdlc.techlib import CellLibraryError, load_cell_library
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="mhdlc",
-        description="Standalone phase-1 CLI for MinecraftHDL.",
+        description="Standalone compiler CLI for MinecraftHDL.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    techlib_parser = subparsers.add_parser(
+        "techlib", help="Redstone technology library operations."
+    )
+    techlib_subparsers = techlib_parser.add_subparsers(dest="techlib_command", required=True)
+    techlib_check_parser = techlib_subparsers.add_parser(
+        "check", help="Validate a redstone technology library YAML file."
+    )
+    techlib_check_parser.add_argument("library", type=Path, help="Path to a YAML tech library.")
 
     modules_parser = subparsers.add_parser(
         "modules", help="List modules available in a Yosys JSON design."
@@ -57,6 +73,19 @@ def build_parser() -> argparse.ArgumentParser:
     graph_parser.add_argument("--module", help="Module name to export.")
     graph_parser.add_argument("--out", type=Path, required=True, help="DOT output path.")
 
+    map_parser = subparsers.add_parser(
+        "map", help="Map logical netlists to the redstone technology netlist."
+    )
+    map_parser.add_argument("input", type=Path, help="Path to a Yosys JSON file.")
+    map_parser.add_argument("--module", help="Module name to map.")
+    map_parser.add_argument(
+        "--all-modules",
+        action="store_true",
+        help="Map every module in the Yosys JSON file.",
+    )
+    map_parser.add_argument("--lib", type=Path, required=True, help="Path to the YAML tech library.")
+    map_parser.add_argument("--out", type=Path, required=True, help="Mapped JSON output path.")
+
     return parser
 
 
@@ -69,6 +98,20 @@ def run_modules(args: argparse.Namespace) -> int:
     module_names = list_yosys_modules(args.input)
     for module_name in module_names:
         print(module_name)
+    return 0
+
+
+def run_techlib_check(args: argparse.Namespace) -> int:
+    try:
+        library = load_cell_library(args.library)
+    except CellLibraryError as exc:
+        print(f"Technology library error: {exc}")
+        return 1
+
+    print(f"Library: {library.name}")
+    print(f"Version: {library.version}")
+    print(f"Cells: {len(library.cells)}")
+    print(f"Kinds: {', '.join(library.kinds())}")
     return 0
 
 
@@ -153,10 +196,64 @@ def run_graph(args: argparse.Namespace) -> int:
     return 0
 
 
+def run_map(args: argparse.Namespace) -> int:
+    if args.module and args.all_modules:
+        raise ValueError("--module and --all-modules are mutually exclusive")
+
+    try:
+        library = load_cell_library(args.lib)
+    except CellLibraryError as exc:
+        print(f"Technology library error: {exc}")
+        return 1
+
+    if args.all_modules:
+        design = load_yosys_design(args.input)
+        validation = validate_design(design)
+        if validation.has_errors():
+            print(json.dumps(validation.to_dict(), indent=2, sort_keys=True))
+            return 1
+        mapped_design = map_design(design, library)
+        payload = {
+            "format": "mhdlc.redstone.v1",
+            "design": redstone_design_to_dict(mapped_design),
+        }
+        _write_text(args.out, json.dumps(payload, indent=2, sort_keys=True) + "\n")
+        print(f"Mapped design with {len(mapped_design.modules)} module(s) to {args.out}")
+        return 0
+
+    module = load_yosys_module(args.input, module_name=args.module)
+    validation = validate_module(module)
+    if validation.errors:
+        print(json.dumps(validation.to_dict(), indent=2, sort_keys=True))
+        return 1
+
+    try:
+        mapped_module = map_module(module, library)
+    except MappingError as exc:
+        print(f"Mapping error: {exc}")
+        return 1
+
+    payload = {
+        "format": "mhdlc.redstone.v1",
+        "module": redstone_module_to_dict(mapped_module),
+        "library": {
+            "name": library.name,
+            "version": library.version,
+        },
+    }
+    _write_text(args.out, json.dumps(payload, indent=2, sort_keys=True) + "\n")
+    print(f"Mapped module '{module.name}' to {args.out}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    if args.command == "techlib":
+        if args.techlib_command == "check":
+            return run_techlib_check(args)
+        parser.error(f"unknown techlib command: {args.techlib_command}")
     if args.command == "modules":
         return run_modules(args)
     if args.command == "import":
@@ -165,6 +262,8 @@ def main(argv: list[str] | None = None) -> int:
         return run_validate(args)
     if args.command == "graph":
         return run_graph(args)
+    if args.command == "map":
+        return run_map(args)
 
     parser.error(f"unknown command: {args.command}")
     return 2

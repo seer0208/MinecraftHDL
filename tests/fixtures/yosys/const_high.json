@@ -1,0 +1,14 @@
+{
+  "creator": "fixture",
+  "modules": {
+    "const_high": {
+      "ports": {
+        "out": { "direction": "output", "bits": [1] }
+      },
+      "cells": {},
+      "netnames": {
+        "out": { "bits": [1], "hide_name": 0, "attributes": {} }
+      }
+    }
+  }
+}

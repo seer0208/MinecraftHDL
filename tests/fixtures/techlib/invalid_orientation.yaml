@@ -1,0 +1,18 @@
+name: invalid_orientation
+version: "0.1"
+cells:
+  - name: bad_inv
+    kind: INV
+    size: [1, 1, 3]
+    pins:
+      - name: A
+        direction: input
+        anchor: [0, 0, 0]
+        side: north
+      - name: Y
+        direction: output
+        anchor: [0, 0, 2]
+        side: south
+    orientations: [north, diagonal]
+    delay_ticks: 1
+    max_wire_without_repeater: 15
