@@ -1,0 +1,32 @@
+{
+  "creator": "fixture",
+  "modules": {
+    "unknown_demo": {
+      "ports": {
+        "a": { "direction": "input", "bits": [2] },
+        "b": { "direction": "output", "bits": [3] }
+      },
+      "cells": {
+        "$dff$0": {
+          "type": "$dff",
+          "parameters": {},
+          "attributes": {},
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [0],
+            "D": [2],
+            "Q": [3]
+          }
+        }
+      },
+      "netnames": {
+        "a": { "bits": [2], "attributes": {} },
+        "b": { "bits": [3], "attributes": {} }
+      }
+    }
+  }
+}

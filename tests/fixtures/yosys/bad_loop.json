@@ -1,0 +1,44 @@
+{
+  "creator": "fixture",
+  "modules": {
+    "loop_demo": {
+      "ports": {
+        "a": { "direction": "input", "bits": [2] },
+        "y": { "direction": "output", "bits": [4] }
+      },
+      "cells": {
+        "$not$0": {
+          "type": "$not",
+          "parameters": {},
+          "attributes": {},
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [4],
+            "Y": [3]
+          }
+        },
+        "$not$1": {
+          "type": "$not",
+          "parameters": {},
+          "attributes": {},
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [3],
+            "Y": [4]
+          }
+        }
+      },
+      "netnames": {
+        "a": { "bits": [2], "attributes": {} },
+        "n0": { "bits": [3], "attributes": {} },
+        "y": { "bits": [4], "attributes": {} }
+      }
+    }
+  }
+}

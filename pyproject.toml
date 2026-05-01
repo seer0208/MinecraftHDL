@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minecrafthdl-next"
+version = "0.1.0"
+description = "Standalone phase-1 compiler scaffold for MinecraftHDL."
+readme = "ROADMAP.md"
+requires-python = ">=3.11"
+authors = [
+  { name = "MinecraftHDL contributors" }
+]
+dependencies = []
+
+[project.scripts]
+mhdlc = "mhdlc.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["mhdlc*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

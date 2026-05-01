@@ -1,0 +1,7 @@
+read_verilog examples/rtl/half_adder.v
+hierarchy -check -top half_adder
+proc
+opt
+techmap
+opt
+json -o build/half_adder.json

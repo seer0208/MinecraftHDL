@@ -1,0 +1,60 @@
+{
+  "creator": "fixture",
+  "modules": {
+    "AND": {
+      "ports": {
+        "a": { "direction": "input", "bits": [2] },
+        "b": { "direction": "input", "bits": [3] },
+        "c": { "direction": "input", "bits": [4] },
+        "d": { "direction": "output", "bits": [5] }
+      },
+      "cells": {
+        "$and$0": {
+          "type": "$and",
+          "parameters": {
+            "A_WIDTH": 1,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {},
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [2],
+            "B": [3],
+            "Y": [6]
+          }
+        },
+        "$and$1": {
+          "type": "$and",
+          "parameters": {
+            "A_WIDTH": 1,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {},
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [6],
+            "B": [4],
+            "Y": [5]
+          }
+        }
+      },
+      "netnames": {
+        "a": { "bits": [2], "attributes": {} },
+        "b": { "bits": [3], "attributes": {} },
+        "c": { "bits": [4], "attributes": {} },
+        "d": { "bits": [5], "attributes": {} },
+        "tmp": { "bits": [6], "attributes": {} }
+      }
+    }
+  }
+}
