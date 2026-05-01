@@ -34,3 +34,38 @@ def test_modules_command_lists_names(capsys):
     assert rc == 0
     captured = capsys.readouterr()
     assert captured.out.splitlines() == ["AND", "counter"]
+
+
+def test_validate_all_modules_json_output(capsys):
+    rc = main(
+        [
+            "validate",
+            str(FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "and.json"),
+            "--all-modules",
+            "--json",
+        ]
+    )
+
+    assert rc == 1
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert set(payload["modules"]) == {"AND", "counter"}
+
+
+def test_import_all_modules_writes_design_json(tmp_path):
+    out_path = tmp_path / "legacy_and.design.json"
+
+    rc = main(
+        [
+            "import",
+            str(FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "and.json"),
+            "--all-modules",
+            "--out",
+            str(out_path),
+        ]
+    )
+
+    assert rc == 1
+    payload = json.loads(out_path.read_text(encoding="utf-8"))
+    assert payload["format"] == "mhdlc.design.v1"
+    assert set(payload["design"]["modules"]) == {"AND", "counter"}

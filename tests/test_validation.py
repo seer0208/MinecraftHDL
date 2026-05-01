@@ -1,4 +1,5 @@
-from mhdlc.checks.validation import validate_module
+from mhdlc.checks.validation import validate_design, validate_module
+from mhdlc.frontends.yosys_json import load_yosys_design
 from mhdlc.frontends.yosys_json import load_yosys_module
 
 from tests.conftest import FIXTURES
@@ -40,3 +41,14 @@ def test_validation_rejects_legacy_sequential_fixture():
     report = validate_module(module)
 
     assert any("outside the phase-1 combinational subset" in error for error in report.errors)
+
+
+def test_validate_design_reports_per_module():
+    design = load_yosys_design(FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "and.json")
+    report = validate_design(design)
+
+    assert report.modules["AND"].errors == []
+    assert any(
+        "outside the phase-1 combinational subset" in error
+        for error in report.modules["counter"].errors
+    )

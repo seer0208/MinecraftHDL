@@ -1,3 +1,8 @@
-from mhdlc.checks.validation import ValidationReport, validate_module
+from mhdlc.checks.validation import (
+    DesignValidationReport,
+    ValidationReport,
+    validate_design,
+    validate_module,
+)
 
-__all__ = ["ValidationReport", "validate_module"]
+__all__ = ["DesignValidationReport", "ValidationReport", "validate_design", "validate_module"]

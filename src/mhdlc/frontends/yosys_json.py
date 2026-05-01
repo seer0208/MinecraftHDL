@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from mhdlc.ir.netlist import Cell, CellPort, Module, Port
+from mhdlc.ir.netlist import Cell, CellPort, Design, Module, NetName, Port
 
 
 SUPPORTED_CELL_TYPES: dict[str, str] = {
@@ -53,26 +53,9 @@ def _normalize_kind(raw_type: str) -> str:
 
 
 def list_yosys_modules(path: Path) -> list[str]:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    modules: dict[str, object] = payload.get("modules", {})
-    return list(modules.keys())
+    return list(load_yosys_design(path).modules.keys())
 
-
-def load_yosys_module(path: Path, module_name: str | None = None) -> Module:
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    modules: dict[str, object] = payload.get("modules", {})
-    if not modules:
-        raise ValueError(f"no modules found in {path}")
-
-    if module_name is None:
-        selected_name = next(iter(modules))
-    else:
-        selected_name = module_name
-        if selected_name not in modules:
-            available = ", ".join(modules.keys())
-            raise ValueError(f"module '{selected_name}' not found; available modules: {available}")
-
-    module_data = modules[selected_name]
+def _module_from_data(module_name: str, module_data: dict[str, object]) -> Module:
     ports = []
     for port_name, port_data in module_data.get("ports", {}).items():
         ports.append(
@@ -107,14 +90,46 @@ def load_yosys_module(path: Path, module_name: str | None = None) -> Module:
             )
         )
 
-    netnames = {
-        name: _normalize_bits(net_data.get("bits", []))
-        for name, net_data in module_data.get("netnames", {}).items()
-    }
+    netnames = {}
+    for name, net_data in module_data.get("netnames", {}).items():
+        netnames[name] = NetName(
+            name=name,
+            bits=_normalize_bits(net_data.get("bits", [])),
+            hide_name=bool(net_data.get("hide_name", 0)),
+            attributes=dict(net_data.get("attributes", {})),
+        )
 
     return Module(
-        name=selected_name,
+        name=module_name,
         ports=tuple(ports),
         cells=tuple(cells),
         netnames=netnames,
+        attributes=dict(module_data.get("attributes", {})),
     )
+
+
+def load_yosys_design(path: Path) -> Design:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    modules: dict[str, object] = payload.get("modules", {})
+    if not modules:
+        raise ValueError(f"no modules found in {path}")
+
+    return Design(
+        creator=payload.get("creator"),
+        modules={name: _module_from_data(name, data) for name, data in modules.items()},
+    )
+
+
+def load_yosys_module(path: Path, module_name: str | None = None) -> Module:
+    design = load_yosys_design(path)
+    modules = design.modules
+
+    if module_name is None:
+        selected_name = next(iter(modules))
+    else:
+        selected_name = module_name
+        if selected_name not in modules:
+            available = ", ".join(modules.keys())
+            raise ValueError(f"module '{selected_name}' not found; available modules: {available}")
+
+    return modules[selected_name]

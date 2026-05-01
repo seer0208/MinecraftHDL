@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections import defaultdict, deque
 from dataclasses import dataclass, field
 
-from mhdlc.ir.netlist import Cell, Module, NetBit, Port
+from mhdlc.ir.netlist import Cell, Design, Module, NetBit, Port
 
 
 @dataclass
@@ -15,6 +15,24 @@ class ValidationReport:
         return {
             "errors": list(self.errors),
             "warnings": list(self.warnings),
+        }
+
+
+@dataclass
+class DesignValidationReport:
+    creator: str | None
+    modules: dict[str, ValidationReport] = field(default_factory=dict)
+
+    def has_errors(self) -> bool:
+        return any(report.errors for report in self.modules.values())
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "creator": self.creator,
+            "modules": {
+                name: report.to_dict()
+                for name, report in self.modules.items()
+            },
         }
 
 
@@ -88,10 +106,16 @@ def _check_port_widths(cell: Cell) -> list[str]:
 
 def _check_module_shape(module: Module) -> list[str]:
     warnings = []
-    hidden_netnames = [name for name in module.netnames if name.startswith("$")]
+    hidden_netnames = [
+        net.name for net in module.netnames.values() if net.hide_name or net.name.startswith("$")
+    ]
     if not module.cells and hidden_netnames:
         warnings.append(
             "module contains no cells but has hidden nets; input may require additional Yosys lowering"
+        )
+    if module.alias_groups():
+        warnings.append(
+            f"module contains {len(module.alias_groups())} net alias group(s); alias metadata preserved in IR"
         )
     return warnings
 
@@ -170,3 +194,13 @@ def validate_module(module: Module) -> ValidationReport:
         report.warnings.append("module contains no cells; net aliases/assigns may need additional lowering")
 
     return report
+
+
+def validate_design(design: Design) -> DesignValidationReport:
+    return DesignValidationReport(
+        creator=design.creator,
+        modules={
+            module_name: validate_module(module)
+            for module_name, module in design.modules.items()
+        },
+    )

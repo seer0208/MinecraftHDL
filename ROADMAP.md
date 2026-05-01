@@ -47,6 +47,7 @@ This phase does not attempt:
 - `mhdlc validate` command
 - `mhdlc modules` command
 - `mhdlc graph` command with DOT output
+- design-level import/validation for multi-module Yosys JSON files
 - `tests/` for importer, validation, and CLI smoke coverage
 - GitHub Actions CI
 - starter docs and examples
@@ -109,6 +110,7 @@ Initial supported cells:
 Phase-1 rule:
 
 - reject unsupported cells explicitly instead of silently continuing
+- preserve net alias metadata even when the backend does not lower it into gates
 
 ### Milestone 3: Structural Validation
 

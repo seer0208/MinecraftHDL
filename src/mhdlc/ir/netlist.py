@@ -41,8 +41,37 @@ class Cell:
 
 
 @dataclass(frozen=True)
+class NetName:
+    name: str
+    bits: tuple[NetBit, ...]
+    hide_name: bool = False
+    attributes: dict[str, object] = field(default_factory=dict)
+
+    @property
+    def width(self) -> int:
+        return len(self.bits)
+
+
+@dataclass(frozen=True)
 class Module:
     name: str
     ports: tuple[Port, ...]
     cells: tuple[Cell, ...]
-    netnames: dict[str, tuple[NetBit, ...]] = field(default_factory=dict)
+    netnames: dict[str, NetName] = field(default_factory=dict)
+    attributes: dict[str, object] = field(default_factory=dict)
+
+    def alias_groups(self) -> dict[tuple[NetBit, ...], tuple[str, ...]]:
+        groups: dict[tuple[NetBit, ...], list[str]] = {}
+        for net in self.netnames.values():
+            groups.setdefault(net.bits, []).append(net.name)
+        return {
+            bits: tuple(names)
+            for bits, names in groups.items()
+            if len(names) > 1
+        }
+
+
+@dataclass(frozen=True)
+class Design:
+    creator: str | None
+    modules: dict[str, Module]
