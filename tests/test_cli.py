@@ -26,3 +26,11 @@ def test_import_command_writes_normalized_json(tmp_path):
 def test_validate_command_fails_for_unsupported_cell():
     rc = main(["validate", str(FIXTURES / "yosys" / "unknown_cell.json")])
     assert rc == 1
+
+
+def test_modules_command_lists_names(capsys):
+    rc = main(["modules", str(FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "and.json")])
+
+    assert rc == 0
+    captured = capsys.readouterr()
+    assert captured.out.splitlines() == ["AND", "counter"]

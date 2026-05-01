@@ -6,7 +6,7 @@ from pathlib import Path
 
 from mhdlc.checks.validation import validate_module
 from mhdlc.export.dot import module_to_dot
-from mhdlc.frontends.yosys_json import load_yosys_module
+from mhdlc.frontends.yosys_json import list_yosys_modules, load_yosys_module
 from mhdlc.io.json_io import module_to_dict
 
 
@@ -16,6 +16,11 @@ def build_parser() -> argparse.ArgumentParser:
         description="Standalone phase-1 CLI for MinecraftHDL.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    modules_parser = subparsers.add_parser(
+        "modules", help="List modules available in a Yosys JSON design."
+    )
+    modules_parser.add_argument("input", type=Path, help="Path to a Yosys JSON file.")
 
     import_parser = subparsers.add_parser(
         "import", help="Import Yosys JSON and emit normalized MinecraftHDL IR."
@@ -29,6 +34,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument("input", type=Path, help="Path to a Yosys JSON file.")
     validate_parser.add_argument("--module", help="Module name to validate.")
+    validate_parser.add_argument(
+        "--json",
+        action="store_true",
+        help="Print the validation report as JSON.",
+    )
 
     graph_parser = subparsers.add_parser(
         "graph", help="Export a Graphviz DOT view of the normalized netlist."
@@ -43,6 +53,13 @@ def build_parser() -> argparse.ArgumentParser:
 def _write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def run_modules(args: argparse.Namespace) -> int:
+    module_names = list_yosys_modules(args.input)
+    for module_name in module_names:
+        print(module_name)
+    return 0
 
 
 def run_import(args: argparse.Namespace) -> int:
@@ -65,6 +82,9 @@ def run_import(args: argparse.Namespace) -> int:
 def run_validate(args: argparse.Namespace) -> int:
     module = load_yosys_module(args.input, module_name=args.module)
     report = validate_module(module)
+    if args.json:
+        print(json.dumps(report.to_dict(), indent=2, sort_keys=True))
+        return 1 if report.errors else 0
     print(f"Module: {module.name}")
     print(f"Ports: {len(module.ports)}")
     print(f"Cells: {len(module.cells)}")
@@ -89,6 +109,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
+    if args.command == "modules":
+        return run_modules(args)
     if args.command == "import":
         return run_import(args)
     if args.command == "validate":

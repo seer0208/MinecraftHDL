@@ -8,7 +8,7 @@
       },
       "cells": {
         "$dff$0": {
-          "type": "$dff",
+          "type": "$mystery_gate",
           "parameters": {},
           "attributes": {},
           "port_directions": {

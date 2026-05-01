@@ -11,12 +11,26 @@ SUPPORTED_CELL_TYPES: dict[str, str] = {
     "$_AND_": "AND",
     "$or": "OR",
     "$_OR_": "OR",
+    "OR": "OR",
     "$xor": "XOR",
     "$_XOR_": "XOR",
     "$not": "INV",
     "$_NOT_": "INV",
     "$mux": "MUX",
     "$_MUX_": "MUX",
+    "$_BUF_": "BUF",
+    "$buf": "BUF",
+}
+
+SEQUENTIAL_CELL_TYPES: dict[str, str] = {
+    "$dff": "DFF",
+    "$_DFF_P_": "DFF",
+    "$_DFF_N_": "DFF",
+    "$adff": "DFF",
+    "$dlatch": "DLATCH",
+    "$dlatch_p": "DLATCH",
+    "$_DLATCH_P_": "DLATCH",
+    "$_DLATCH_N_": "DLATCH",
 }
 
 
@@ -33,7 +47,15 @@ def _normalize_bits(bits: list[int | str]) -> tuple[int | str, ...]:
 
 
 def _normalize_kind(raw_type: str) -> str:
+    if raw_type in SEQUENTIAL_CELL_TYPES:
+        return SEQUENTIAL_CELL_TYPES[raw_type]
     return SUPPORTED_CELL_TYPES.get(raw_type, "UNKNOWN")
+
+
+def list_yosys_modules(path: Path) -> list[str]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    modules: dict[str, object] = payload.get("modules", {})
+    return list(modules.keys())
 
 
 def load_yosys_module(path: Path, module_name: str | None = None) -> Module:

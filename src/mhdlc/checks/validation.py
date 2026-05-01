@@ -72,6 +72,30 @@ def _check_single_driver(module: Module, drivers: dict[NetBit, list[str]]) -> li
     return errors
 
 
+def _check_port_widths(cell: Cell) -> list[str]:
+    errors = []
+    for port in cell.ports:
+        expected_width = cell.parameters.get(f"{port.name}_WIDTH")
+        if expected_width is None:
+            continue
+        if int(expected_width) != len(port.bits):
+            errors.append(
+                f"cell '{cell.name}' port '{port.name}' width mismatch: "
+                f"expected {expected_width}, got {len(port.bits)}"
+            )
+    return errors
+
+
+def _check_module_shape(module: Module) -> list[str]:
+    warnings = []
+    hidden_netnames = [name for name in module.netnames if name.startswith("$")]
+    if not module.cells and hidden_netnames:
+        warnings.append(
+            "module contains no cells but has hidden nets; input may require additional Yosys lowering"
+        )
+    return warnings
+
+
 def _cell_dependencies(module: Module) -> tuple[dict[str, set[str]], dict[str, int]]:
     net_to_driver_cell: dict[NetBit, str] = {}
     for cell in module.cells:
@@ -89,7 +113,7 @@ def _cell_dependencies(module: Module) -> tuple[dict[str, set[str]], dict[str, i
                 if _is_constant(bit):
                     continue
                 driver = net_to_driver_cell.get(bit)
-                if driver is None or driver == cell.name:
+                if driver is None:
                     continue
                 if cell.name not in adjacency[driver]:
                     adjacency[driver].add(cell.name)
@@ -121,12 +145,20 @@ def _check_combinational_loops(module: Module) -> list[str]:
 def validate_module(module: Module) -> ValidationReport:
     report = ValidationReport()
     report.errors.extend(_find_unsupported_cells(module))
+    report.warnings.extend(_check_module_shape(module))
+
+    for cell in module.cells:
+        report.errors.extend(_check_port_widths(cell))
 
     drivers = _build_driver_table(module)
     report.errors.extend(_check_single_driver(module, drivers))
 
-    unsupported_sequential = [cell for cell in module.cells if cell.kind not in {"AND", "OR", "XOR", "INV", "MUX", "UNKNOWN"}]
-    for cell in unsupported_sequential:
+    unsupported_phase1 = [
+        cell
+        for cell in module.cells
+        if cell.kind not in {"AND", "OR", "XOR", "INV", "MUX", "BUF", "UNKNOWN"}
+    ]
+    for cell in unsupported_phase1:
         report.errors.append(
             f"cell '{cell.name}' of kind '{cell.kind}' is outside the phase-1 combinational subset"
         )

@@ -45,6 +45,7 @@ This phase does not attempt:
 - `src/mhdlc/` package scaffold
 - `mhdlc import` command
 - `mhdlc validate` command
+- `mhdlc modules` command
 - `mhdlc graph` command with DOT output
 - `tests/` for importer, validation, and CLI smoke coverage
 - GitHub Actions CI

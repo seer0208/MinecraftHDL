@@ -16,6 +16,12 @@ Validate a design:
 mhdlc validate tests/fixtures/yosys/and_gate.json
 ```
 
+List modules inside a Yosys JSON file:
+
+```bash
+mhdlc modules src/main/tests/json\ files/and.json
+```
+
 Export a DOT graph:
 
 ```bash
@@ -26,6 +32,7 @@ mhdlc graph tests/fixtures/yosys/and_gate.json --out build/and_gate.dot
 
 - Only acyclic combinational netlists are supported.
 - Unsupported cells are treated as hard errors.
+- Known sequential cells are recognized and rejected explicitly.
 - Structural validation runs on the normalized IR, not directly on the raw Yosys JSON.
 
 ## Next Work

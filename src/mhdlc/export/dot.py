@@ -26,6 +26,8 @@ def module_to_dot(module: Module) -> str:
     for cell in module.cells:
         for input_port in cell.input_ports():
             for bit in input_port.bits:
+                if bit in {0, 1, "0", "1"}:
+                    continue
                 driver = drivers.get(bit)
                 if driver is not None:
                     lines.append(f'  "{driver}" -> "cell:{cell.name}" [label="{input_port.name}:{bit}"];')

@@ -23,3 +23,20 @@ def test_validation_detects_unsupported_cells():
     report = validate_module(module)
 
     assert any("unsupported cell type" in error for error in report.errors)
+
+
+def test_validation_accepts_legacy_combinational_fixture():
+    module = load_yosys_module(FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "test23.json")
+    report = validate_module(module)
+
+    assert report.errors == []
+
+
+def test_validation_rejects_legacy_sequential_fixture():
+    module = load_yosys_module(
+        FIXTURES.parent.parent / "src" / "main" / "tests" / "json files" / "counter.json",
+        module_name="counter",
+    )
+    report = validate_module(module)
+
+    assert any("outside the phase-1 combinational subset" in error for error in report.errors)
